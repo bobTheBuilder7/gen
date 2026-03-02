@@ -51,7 +51,7 @@ func main() {
 
 	f.AddBlock(gen.MethodFunc("q *Queries", "GetUsers", "ctx context.Context, id int", "error",
 		gen.Call("err", "q.db.Exec", gen.Arg("ctx"), gen.Arg("GetUsersSQL")),
-		gen.ErrCheck(""),
+		gen.ErrCheck(gen.Arg("")),
 		gen.Line("return nil"),
 	))
 

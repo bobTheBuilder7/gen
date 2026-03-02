@@ -104,9 +104,9 @@ func Call(assigns, name string, args ...fmt.Stringer) fmt.Stringer {
 	return raw(call)
 }
 
-func ErrCheck(value string) fmt.Stringer {
-	if value != "" {
-		return raw(fmt.Sprintf("if err != nil {\nreturn %s, err\n}", value))
+func ErrCheck(value fmt.Stringer) fmt.Stringer {
+	if value.String() != "" {
+		return raw(fmt.Sprintf("if err != nil {\nreturn %s, err\n}", value.String()))
 	}
 	return raw("if err != nil {\nreturn err\n}")
 }
