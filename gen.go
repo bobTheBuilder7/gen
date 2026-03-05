@@ -1,7 +1,9 @@
 package gen
 
 import (
+	"bytes"
 	"fmt"
+	"go/format"
 	"io"
 	"strings"
 	"sync"
@@ -225,36 +227,29 @@ func (f *File) AddBlock(block fmt.Stringer) {
 	f.blocks = append(f.blocks, block)
 }
 
-func (f *File) WriteTo(w io.Writer) (int64, error) {
+func (f *File) WriteTo(w io.Writer) error {
 	f.mu.RLock()
 	defer f.mu.RUnlock()
-	var n int64
+
+	buf := new(bytes.Buffer)
 
 	if f.comment != "" {
 		for line := range strings.SplitSeq(f.comment, "\n") {
-			k, err := fmt.Fprintf(w, "// %s\n", line)
-			if err != nil {
-				return n, err
-			}
-			n += int64(k)
+			fmt.Fprintf(buf, "// %s\n", line)
 		}
 	}
 
-	k, err := fmt.Fprintf(w, "package %s\n\n", f.packageName)
-	if err != nil {
-		return n, err
-	}
-
-	n += int64(k)
+	fmt.Fprintf(buf, "package %s\n\n", f.packageName)
 
 	for _, b := range f.blocks {
-		k, err = fmt.Fprintf(w, "%s\n", b.String())
-		if err != nil {
-			return n, err
-		}
-
-		n += int64(k)
+		fmt.Fprintf(buf, "%s\n", b.String())
 	}
 
-	return n, nil
+	formatted, err := format.Source(buf.Bytes())
+	if err != nil {
+		return err
+	}
+
+	_, err = w.Write(formatted)
+	return err
 }
