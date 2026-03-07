@@ -1,9 +1,7 @@
 package gen
 
 import (
-	"bytes"
 	"fmt"
-	"go/format"
 	"io"
 	"strings"
 	"sync"
@@ -231,25 +229,26 @@ func (f *File) WriteTo(w io.Writer) error {
 	f.mu.RLock()
 	defer f.mu.RUnlock()
 
-	buf := new(bytes.Buffer)
-
 	if f.comment != "" {
 		for line := range strings.SplitSeq(f.comment, "\n") {
-			fmt.Fprintf(buf, "// %s\n", line)
+			_, err := fmt.Fprintf(w, "// %s\n", line)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
-	fmt.Fprintf(buf, "package %s\n\n", f.packageName)
-
-	for _, b := range f.blocks {
-		fmt.Fprintf(buf, "%s\n", b.String())
-	}
-
-	formatted, err := format.Source(buf.Bytes())
+	_, err := fmt.Fprintf(w, "package %s\n\n", f.packageName)
 	if err != nil {
 		return err
 	}
 
-	_, err = w.Write(formatted)
-	return err
+	for _, b := range f.blocks {
+		_, err = fmt.Fprintf(w, "%s\n", b.String())
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
