@@ -138,7 +138,9 @@ func TestFileWriteToNoComment(t *testing.T) {
 	f.AddBlock(Var("x", Int(1)))
 
 	var buf bytes.Buffer
-	assert.Nil(t, f.WriteTo(&buf))
+	n, err := f.WriteTo(&buf)
+	assert.Nil(t, err)
+	assert.True(t, n > 0)
 	assert.Equal(t, buf.String(), "package util\n\nvar x = 1\n")
 }
 
@@ -146,7 +148,9 @@ func TestFileWriteToMultiLineComment(t *testing.T) {
 	f := NewFile("main", "line one", "line two")
 
 	var buf bytes.Buffer
-	assert.Nil(t, f.WriteTo(&buf))
+	n, err := f.WriteTo(&buf)
+	assert.Nil(t, err)
+	assert.True(t, n > 0)
 	assert.Equal(t, buf.String(), "// line one\n// line two\npackage main\n\n")
 }
 
@@ -158,6 +162,8 @@ func TestFileWriteTo(t *testing.T) {
 	))
 
 	var buf bytes.Buffer
-	assert.Nil(t, f.WriteTo(&buf))
+	n, err := f.WriteTo(&buf)
+	assert.Nil(t, err)
+	assert.True(t, n > 0)
 	assert.Equal(t, buf.String(), "// generated code\npackage main\n\nimport \"fmt\"\nfunc main() {\nfmt.Println(\"hello\")\n}\n")
 }

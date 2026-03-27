@@ -225,30 +225,35 @@ func (f *File) AddBlock(block fmt.Stringer) {
 	f.blocks = append(f.blocks, block)
 }
 
-func (f *File) WriteTo(w io.Writer) error {
+func (f *File) WriteTo(w io.Writer) (int64, error) {
 	f.mu.RLock()
 	defer f.mu.RUnlock()
 
+	var total int64
+
 	if f.comment != "" {
 		for line := range strings.SplitSeq(f.comment, "\n") {
-			_, err := fmt.Fprintf(w, "// %s\n", line)
+			n, err := fmt.Fprintf(w, "// %s\n", line)
+			total += int64(n)
 			if err != nil {
-				return err
+				return total, err
 			}
 		}
 	}
 
-	_, err := fmt.Fprintf(w, "package %s\n\n", f.packageName)
+	n, err := fmt.Fprintf(w, "package %s\n\n", f.packageName)
+	total += int64(n)
 	if err != nil {
-		return err
+		return total, err
 	}
 
 	for _, b := range f.blocks {
-		_, err = fmt.Fprintf(w, "%s\n", b.String())
+		n, err = fmt.Fprintf(w, "%s\n", b.String())
+		total += int64(n)
 		if err != nil {
-			return err
+			return total, err
 		}
 	}
 
-	return nil
+	return total, nil
 }
