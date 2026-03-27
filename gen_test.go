@@ -3,38 +3,24 @@ package gen
 import (
 	"bytes"
 	"testing"
+
+	"github.com/bobTheBuilder7/gen/assert"
 )
 
 func TestImport(t *testing.T) {
-	got := Import("", "fmt").String()
-	want := `import "fmt"`
-	if got != want {
-		t.Fatalf("got %q, want %q", got, want)
-	}
+	assert.Equal(t, Import("", "fmt").String(), `import "fmt"`)
 }
 
 func TestImportWithAlias(t *testing.T) {
-	got := Import("f ", "fmt").String()
-	want := `import f "fmt"`
-	if got != want {
-		t.Fatalf("got %q, want %q", got, want)
-	}
+	assert.Equal(t, Import("f ", "fmt").String(), `import f "fmt"`)
 }
 
 func TestVar(t *testing.T) {
-	got := Var("x", Int(42)).String()
-	want := "var x = 42"
-	if got != want {
-		t.Fatalf("got %q, want %q", got, want)
-	}
+	assert.Equal(t, Var("x", Int(42)).String(), "var x = 42")
 }
 
 func TestConst(t *testing.T) {
-	got := Const("name", String("hello")).String()
-	want := `const name = "hello"`
-	if got != want {
-		t.Fatalf("got %q, want %q", got, want)
-	}
+	assert.Equal(t, Const("name", String("hello")).String(), `const name = "hello"`)
 }
 
 func TestValueWrappers(t *testing.T) {
@@ -51,9 +37,7 @@ func TestValueWrappers(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.got != tt.want {
-				t.Fatalf("got %q, want %q", tt.got, tt.want)
-			}
+			assert.Equal(t, tt.got, tt.want)
 		})
 	}
 }
@@ -63,92 +47,55 @@ func TestStruct(t *testing.T) {
 		Field{Name: "Name", Type: "string"},
 		Field{Name: "Age", Type: "int", Tag: `json:"age"`},
 	).String()
-	want := "type User struct {\nName string\nAge int `json:\"age\"`\n}"
-	if got != want {
-		t.Fatalf("got %q, want %q", got, want)
-	}
+	assert.Equal(t, got, "type User struct {\nName string\nAge int `json:\"age\"`\n}")
 }
 
 func TestInterface(t *testing.T) {
 	got := Interface("Reader",
 		Method{Name: "Read", Params: "p []byte", Returns: "(int, error)"},
 	).String()
-	want := "type Reader interface {\nRead(p []byte) (int, error)\n}"
-	if got != want {
-		t.Fatalf("got %q, want %q", got, want)
-	}
+	assert.Equal(t, got, "type Reader interface {\nRead(p []byte) (int, error)\n}")
 }
 
 func TestFunc(t *testing.T) {
 	got := Func("Add", "a, b int", "int",
 		Line("return a + b"),
 	).String()
-	want := "func Add(a, b int) int {\nreturn a + b\n}"
-	if got != want {
-		t.Fatalf("got %q, want %q", got, want)
-	}
+	assert.Equal(t, got, "func Add(a, b int) int {\nreturn a + b\n}")
 }
 
 func TestMethodFunc(t *testing.T) {
 	got := MethodFunc("s *Server", "Start", "", "error",
 		Line("return nil"),
 	).String()
-	want := "func (s *Server) Start() error {\nreturn nil\n}"
-	if got != want {
-		t.Fatalf("got %q, want %q", got, want)
-	}
+	assert.Equal(t, got, "func (s *Server) Start() error {\nreturn nil\n}")
 }
 
 func TestCallAndErrCheck(t *testing.T) {
 	got := Call("result, err", "doSomething", Arg("ctx"), String("test")).String()
-	want := `result, err := doSomething(ctx, "test")`
-	if got != want {
-		t.Fatalf("got %q, want %q", got, want)
-	}
+	assert.Equal(t, got, `result, err := doSomething(ctx, "test")`)
 
 	got = ErrCheck(Arg("nil")).String()
-	want = "if err != nil {\nreturn nil, err\n}"
-	if got != want {
-		t.Fatalf("got %q, want %q", got, want)
-	}
+	assert.Equal(t, got, "if err != nil {\nreturn nil, err\n}")
 
 	got = ErrCheck(Arg("")).String()
-	want = "if err != nil {\nreturn err\n}"
-	if got != want {
-		t.Fatalf("got %q, want %q", got, want)
-	}
+	assert.Equal(t, got, "if err != nil {\nreturn err\n}")
 }
 
 func TestTypeAlias(t *testing.T) {
-	got := TypeAlias("UserID", "int64").String()
-	want := "type UserID int64"
-	if got != want {
-		t.Fatalf("got %q, want %q", got, want)
-	}
+	assert.Equal(t, TypeAlias("UserID", "int64").String(), "type UserID int64")
 }
 
 func TestFieldWithoutTag(t *testing.T) {
-	got := (Field{Name: "ID", Type: "int"}).String()
-	want := "ID int"
-	if got != want {
-		t.Fatalf("got %q, want %q", got, want)
-	}
+	assert.Equal(t, (Field{Name: "ID", Type: "int"}).String(), "ID int")
 }
 
 func TestFieldWithTag(t *testing.T) {
-	got := (Field{Name: "Name", Type: "string", Tag: `json:"name,omitempty"`}).String()
-	want := "Name string `json:\"name,omitempty\"`"
-	if got != want {
-		t.Fatalf("got %q, want %q", got, want)
-	}
+	assert.Equal(t, (Field{Name: "Name", Type: "string", Tag: `json:"name,omitempty"`}).String(), "Name string `json:\"name,omitempty\"`")
 }
 
 func TestStructEmpty(t *testing.T) {
-	got := Struct("Empty").String()
-	want := "type Empty struct {\n}"
-	if got != want {
-		t.Fatalf("got %q, want %q", got, want)
-	}
+	assert.Equal(t, Struct("Empty").String(), "type Empty struct {\n}")
 }
 
 func TestInterfaceMultipleMethods(t *testing.T) {
@@ -156,20 +103,14 @@ func TestInterfaceMultipleMethods(t *testing.T) {
 		Method{Name: "Read", Params: "p []byte", Returns: "(int, error)"},
 		Method{Name: "Write", Params: "p []byte", Returns: "(int, error)"},
 	).String()
-	want := "type ReadWriter interface {\nRead(p []byte) (int, error)\nWrite(p []byte) (int, error)\n}"
-	if got != want {
-		t.Fatalf("got %q, want %q", got, want)
-	}
+	assert.Equal(t, got, "type ReadWriter interface {\nRead(p []byte) (int, error)\nWrite(p []byte) (int, error)\n}")
 }
 
 func TestFuncNoReturn(t *testing.T) {
 	got := Func("doWork", "", "",
 		Line("fmt.Println()"),
 	).String()
-	want := "func doWork() {\nfmt.Println()\n}"
-	if got != want {
-		t.Fatalf("got %q, want %q", got, want)
-	}
+	assert.Equal(t, got, "func doWork() {\nfmt.Println()\n}")
 }
 
 func TestFuncMultipleBodyLines(t *testing.T) {
@@ -177,34 +118,19 @@ func TestFuncMultipleBodyLines(t *testing.T) {
 		Var("msg", String("hello")),
 		Call("", "fmt.Println", Arg("msg")),
 	).String()
-	want := "func greet(name string) {\nvar msg = \"hello\"\nfmt.Println(msg)\n}"
-	if got != want {
-		t.Fatalf("got %q, want %q", got, want)
-	}
+	assert.Equal(t, got, "func greet(name string) {\nvar msg = \"hello\"\nfmt.Println(msg)\n}")
 }
 
 func TestCallNoAssign(t *testing.T) {
-	got := Call("", "fmt.Println", String("hi")).String()
-	want := `fmt.Println("hi")`
-	if got != want {
-		t.Fatalf("got %q, want %q", got, want)
-	}
+	assert.Equal(t, Call("", "fmt.Println", String("hi")).String(), `fmt.Println("hi")`)
 }
 
 func TestCallNoArgs(t *testing.T) {
-	got := Call("", "doWork").String()
-	want := "doWork()"
-	if got != want {
-		t.Fatalf("got %q, want %q", got, want)
-	}
+	assert.Equal(t, Call("", "doWork").String(), "doWork()")
 }
 
 func TestLine(t *testing.T) {
-	got := Line("x := 5").String()
-	want := "x := 5"
-	if got != want {
-		t.Fatalf("got %q, want %q", got, want)
-	}
+	assert.Equal(t, Line("x := 5").String(), "x := 5")
 }
 
 func TestFileWriteToNoComment(t *testing.T) {
@@ -212,28 +138,16 @@ func TestFileWriteToNoComment(t *testing.T) {
 	f.AddBlock(Var("x", Int(1)))
 
 	var buf bytes.Buffer
-	if err := f.WriteTo(&buf); err != nil {
-		t.Fatal(err)
-	}
-
-	want := "package util\n\nvar x = 1\n"
-	if buf.String() != want {
-		t.Fatalf("got %q, want %q", buf.String(), want)
-	}
+	assert.Nil(t, f.WriteTo(&buf))
+	assert.Equal(t, buf.String(), "package util\n\nvar x = 1\n")
 }
 
 func TestFileWriteToMultiLineComment(t *testing.T) {
 	f := NewFile("main", "line one", "line two")
 
 	var buf bytes.Buffer
-	if err := f.WriteTo(&buf); err != nil {
-		t.Fatal(err)
-	}
-
-	want := "// line one\n// line two\npackage main\n\n"
-	if buf.String() != want {
-		t.Fatalf("got %q, want %q", buf.String(), want)
-	}
+	assert.Nil(t, f.WriteTo(&buf))
+	assert.Equal(t, buf.String(), "// line one\n// line two\npackage main\n\n")
 }
 
 func TestFileWriteTo(t *testing.T) {
@@ -244,12 +158,6 @@ func TestFileWriteTo(t *testing.T) {
 	))
 
 	var buf bytes.Buffer
-	if err := f.WriteTo(&buf); err != nil {
-		t.Fatal(err)
-	}
-
-	want := "// generated code\npackage main\n\nimport \"fmt\"\nfunc main() {\nfmt.Println(\"hello\")\n}\n"
-	if buf.String() != want {
-		t.Fatalf("got %q, want %q", buf.String(), want)
-	}
+	assert.Nil(t, f.WriteTo(&buf))
+	assert.Equal(t, buf.String(), "// generated code\npackage main\n\nimport \"fmt\"\nfunc main() {\nfmt.Println(\"hello\")\n}\n")
 }
