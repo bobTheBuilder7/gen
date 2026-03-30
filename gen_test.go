@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/bobTheBuilder7/gen/assert"
+	"github.com/bobTheBuilder7/assert"
 )
 
 func TestImport(t *testing.T) {
