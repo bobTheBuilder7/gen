@@ -72,6 +72,13 @@ func String(v string) fmt.Stringer {
 	return raw(fmt.Sprintf("\"%s\"", v))
 }
 
+func RawString(v string) fmt.Stringer {
+	if strings.ContainsRune(v, '`') {
+		panic("gen.RawString: input contains a backtick, which is not allowed in a raw string literal")
+	}
+	return raw("`" + v + "`")
+}
+
 func Int(v int) fmt.Stringer {
 	return raw(fmt.Sprintf("%d", v))
 }
