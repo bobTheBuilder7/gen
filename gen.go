@@ -246,6 +246,12 @@ func (f *File) WriteTo(w io.Writer) (int64, error) {
 				return total, err
 			}
 		}
+
+		n, err := fmt.Fprintf(w, "\n")
+		total += int64(n)
+		if err != nil {
+			return total, err
+		}
 	}
 
 	n, err := fmt.Fprintf(w, "package %s\n\n", f.packageName)
